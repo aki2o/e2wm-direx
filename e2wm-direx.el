@@ -1,4 +1,4 @@
-;;; e2wm-direx.el --- Plugin to direx.el for e2wm.el
+;;; e2wm-direx.el --- Plugin of e2wm.el for direx.el
 
 ;; Copyright (C) 2014  Hiroaki Otsu
 
