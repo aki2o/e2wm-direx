@@ -8,11 +8,11 @@ This is a extension of Emacs that is a plugin of ![e2wm.el](https://github.com/k
 
 ### If use package.el
 
-2014/05/15 Now application
+2014/05/16 It's available by using melpa.
 
 ### If use el-get.el
 
-2014/05/15 Now application
+2014/05/16 It's available. But, master branch only.
 
 ### If use auto-install.el
 
