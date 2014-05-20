@@ -5,7 +5,7 @@
 ;; Author: Hiroaki Otsu <ootsuhiroaki@gmail.com>
 ;; Keywords: tools, window manager, convenience
 ;; URL: https://github.com/aki2o/e2wm-direx
-;; Version: 0.0.2
+;; Version: 0.0.3
 ;; Package-Requires: ((e2wm "1.2") (direx "0.1alpha"))
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -112,44 +112,46 @@
   (e2wm:message "DirEX timer stopped."))
 
 (defun e2wm-direx:do-sync ()
-  (let* ((wm (e2wm:pst-get-wm))
-         (wname (wlf:window-name e2wm-direx::winfo))
-         (mbuf (e2wm:history-get-main-buffer))
-         (mpath (buffer-file-name mbuf))
-         (sync-point (lambda (buf)
-                       (with-current-buffer mbuf
-                         (direx:maybe-goto-current-buffer-item buf)))))
-    (cond ((not mpath)
-           ;; Main buffer is not target.
-           (wlf:set-buffer wm wname (e2wm-direx::get-err-buffer)))
-          ((and e2wm-direx::current-path
-                (string= mpath e2wm-direx::current-path))
-           ;; Already sync is done.
-           t)
-          (t
-           ;; Try sync.
-           (e2wm:message "DirEX update current path : %s" mpath)
-           (setq e2wm-direx::current-path mpath)
-           (with-current-buffer mbuf
-             (direx:aif (or (ignore-errors
-                              (direx-project:find-project-root-noselect (or buffer-file-name
-                                                                            default-directory)))
-                            (direx:find-directory-reuse-noselect default-directory))
-                 (with-current-buffer it
-                   (e2wm:message "DirEX update active buffer")
-                   (direx:awhen (direx:item-at-point)
-                     (when (not (string= mpath
-                                         (direx:file-full-name (direx:item-tree it))))
-                       (e2wm:message "DirEX move point to %s" mpath)
-                       (or (funcall sync-point (current-buffer))
-                           (progn (direx:refresh-whole-tree)
-                                  (funcall sync-point (current-buffer))))))
-                   (hl-line-mode 1)
-                   (hl-line-highlight)
-                   (set-window-point (wlf:get-window wm wname) (point))
-                   (wlf:set-buffer wm wname (current-buffer)))
-               ;; Failed to sync
-               (wlf:set-buffer wm wname (e2wm-direx::get-err-buffer))))))))
+  (if (not (e2wm:managed-p))
+      (e2wm-direx:stop-sync-timer)
+    (let* ((wm (e2wm:pst-get-wm))
+           (wname (wlf:window-name e2wm-direx::winfo))
+           (mbuf (e2wm:history-get-main-buffer))
+           (mpath (buffer-file-name mbuf))
+           (sync-point (lambda (buf)
+                         (with-current-buffer mbuf
+                           (direx:maybe-goto-current-buffer-item buf)))))
+      (cond ((not mpath)
+             ;; Main buffer is not target.
+             (wlf:set-buffer wm wname (e2wm-direx::get-err-buffer)))
+            ((and e2wm-direx::current-path
+                  (string= mpath e2wm-direx::current-path))
+             ;; Already sync is done.
+             t)
+            (t
+             ;; Try sync.
+             (e2wm:message "DirEX update current path : %s" mpath)
+             (setq e2wm-direx::current-path mpath)
+             (with-current-buffer mbuf
+               (direx:aif (or (ignore-errors
+                                (direx-project:find-project-root-noselect (or buffer-file-name
+                                                                              default-directory)))
+                              (direx:find-directory-reuse-noselect default-directory))
+                   (with-current-buffer it
+                     (e2wm:message "DirEX update active buffer")
+                     (direx:awhen (direx:item-at-point)
+                       (when (not (string= mpath
+                                           (direx:file-full-name (direx:item-tree it))))
+                         (e2wm:message "DirEX move point to %s" mpath)
+                         (or (funcall sync-point (current-buffer))
+                             (progn (direx:refresh-whole-tree)
+                                    (funcall sync-point (current-buffer))))))
+                     (hl-line-mode 1)
+                     (hl-line-highlight)
+                     (set-window-point (wlf:get-window wm wname) (point))
+                     (wlf:set-buffer wm wname (current-buffer)))
+                 ;; Failed to sync
+                 (wlf:set-buffer wm wname (e2wm-direx::get-err-buffer)))))))))
 
 (e2wm:plugin-register 'direx "DirEX" 'e2wm-direx:def-plugin)
 
