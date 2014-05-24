@@ -5,7 +5,7 @@
 ;; Author: Hiroaki Otsu <ootsuhiroaki@gmail.com>
 ;; Keywords: tools, window manager, convenience
 ;; URL: https://github.com/aki2o/e2wm-direx
-;; Version: 0.0.3
+;; Version: 0.0.4
 ;; Package-Requires: ((e2wm "1.2") (direx "0.1alpha"))
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -112,7 +112,7 @@
   (e2wm:message "DirEX timer stopped."))
 
 (defun e2wm-direx:do-sync ()
-  (if (not (e2wm:managed-p))
+  (if (not (e2wm-direx::active-p))
       (e2wm-direx:stop-sync-timer)
     (let* ((wm (e2wm:pst-get-wm))
            (wname (wlf:window-name e2wm-direx::winfo))
@@ -156,9 +156,16 @@
 (e2wm:plugin-register 'direx "DirEX" 'e2wm-direx:def-plugin)
 
 
+(defun e2wm-direx::active-p ()
+  (and (e2wm:managed-p)
+       (eq (e2wm:pst-window-plugin-get (e2wm:pst-get-wm) (wlf:window-name e2wm-direx::winfo))
+           'direx)))
+
+(defvar e2wm-direx::err-buffer-name " *WM:DirEX-Err*")
+
 (defun e2wm-direx::get-err-buffer ()
-  (or (get-buffer " *WM:DirEX-Err*")
-      (with-current-buffer (get-buffer-create " *WM:DirEX-Err*")
+  (or (get-buffer e2wm-direx::err-buffer-name)
+      (with-current-buffer (get-buffer-create e2wm-direx::err-buffer-name)
         (insert "Available node is nothing.\n")
         (setq buffer-read-only t)
         (current-buffer))))
