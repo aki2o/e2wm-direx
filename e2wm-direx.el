@@ -5,7 +5,7 @@
 ;; Author: Hiroaki Otsu <ootsuhiroaki@gmail.com>
 ;; Keywords: tools, window manager, convenience
 ;; URL: https://github.com/aki2o/e2wm-direx
-;; Version: 0.0.4
+;; Version: 0.0.5
 ;; Package-Requires: ((e2wm "1.2") (direx "0.1alpha"))
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -172,4 +172,4 @@
 
 
 (provide 'e2wm-direx)
-;;; e2mw-direx.el ends here
+;;; e2wm-direx.el ends here
