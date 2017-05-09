@@ -159,7 +159,9 @@
 (defun e2wm-direx::active-p ()
   (and (e2wm:managed-p)
        (eq (e2wm:pst-window-plugin-get (e2wm:pst-get-wm) (wlf:window-name e2wm-direx::winfo))
-           'direx)))
+           'direx)
+       (wlf:get-window (e2wm:pst-get-wm) (wlf:window-name e2wm-direx::winfo))
+       t))
 
 (defvar e2wm-direx::err-buffer-name " *WM:DirEX-Err*")
 
