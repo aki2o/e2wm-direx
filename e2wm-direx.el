@@ -116,7 +116,10 @@
       (e2wm-direx:stop-sync-timer)
     (let* ((wm (e2wm:pst-get-wm))
            (wname (wlf:window-name e2wm-direx::winfo))
-           (mbuf (e2wm:history-get-main-buffer))
+           (main (e2wm:$pst-main (e2wm:pst-get-instance)))
+           (mbuf (if (and main (wlf:window-name-p wm main))
+                     (wlf:get-buffer wm main)
+                   (e2wm:history-get-main-buffer)))
            (mpath (buffer-file-name mbuf))
            (sync-point (lambda (buf)
                          (with-current-buffer mbuf
