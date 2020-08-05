@@ -62,10 +62,6 @@
 ;;; API:
 ;; 
 ;; [EVAL] (autodoc-document-lisp-buffer :type 'command :prefix "e2wm-direx:[^:]" :docstring t)
-;; `e2wm-direx:start-sync-timer'
-;; Not documented.
-;; `e2wm-direx:stop-sync-timer'
-;; Not documented.
 ;; 
 ;;  *** END auto-documentation
 ;; [Note] Functions and variables other than listed above, Those specifications may be changed without notice.
@@ -86,36 +82,10 @@
 (require 'direx-project)
 (require 'hl-line)
 
-(defvar e2wm-direx::winfo nil)
-(defvar e2wm-direx::sync-timer nil)
-(defvar e2wm-direx::current-path nil)
-
 (defun e2wm-direx:def-plugin (frame wm winfo)
-  (setq e2wm-direx::winfo winfo)
-  (setq e2wm-direx::current-path nil)
-  (e2wm-direx:start-sync-timer))
-
-(defun e2wm-direx:start-sync-timer ()
-  (interactive)
-  (when (not e2wm-direx::sync-timer)
-    (setq e2wm-direx::sync-timer
-          (run-with-idle-timer idle-update-delay
-                               t
-                               'e2wm-direx:do-sync))
-    (e2wm:message "DirEX timer started.")))
-
-(defun e2wm-direx:stop-sync-timer ()
-  (interactive)
-  (when (timerp e2wm-direx::sync-timer)
-    (cancel-timer e2wm-direx::sync-timer))
-  (setq e2wm-direx::sync-timer nil)
-  (e2wm:message "DirEX timer stopped."))
-
-(defun e2wm-direx:do-sync ()
-  (if (not (e2wm-direx::active-p))
-      (e2wm-direx:stop-sync-timer)
+  (when (e2wm-direx::active-p winfo)
     (let* ((wm (e2wm:pst-get-wm))
-           (wname (wlf:window-name e2wm-direx::winfo))
+           (wname (wlf:window-name winfo))
            (main (e2wm:$pst-main (e2wm:pst-get-instance)))
            (mbuf (if (and main (wlf:window-name-p wm main))
                      (wlf:get-buffer wm main)
@@ -127,14 +97,9 @@
       (cond ((not mpath)
              ;; Main buffer is not target.
              (wlf:set-buffer wm wname (e2wm-direx::get-err-buffer)))
-            ((and e2wm-direx::current-path
-                  (string= mpath e2wm-direx::current-path))
-             ;; Already sync is done.
-             t)
             (t
              ;; Try sync.
              (e2wm:message "DirEX update current path : %s" mpath)
-             (setq e2wm-direx::current-path mpath)
              (with-current-buffer mbuf
                (direx:aif (or (ignore-errors
                                 (direx-project:find-project-root-noselect (or buffer-file-name
@@ -159,11 +124,11 @@
 (e2wm:plugin-register 'direx "DirEX" 'e2wm-direx:def-plugin)
 
 
-(defun e2wm-direx::active-p ()
+(defun e2wm-direx::active-p (winfo)
   (and (e2wm:managed-p)
-       (eq (e2wm:pst-window-plugin-get (e2wm:pst-get-wm) (wlf:window-name e2wm-direx::winfo))
+       (eq (e2wm:pst-window-plugin-get (e2wm:pst-get-wm) (wlf:window-name winfo))
            'direx)
-       (wlf:get-window (e2wm:pst-get-wm) (wlf:window-name e2wm-direx::winfo))
+       (wlf:get-window (e2wm:pst-get-wm) (wlf:window-name winfo))
        t))
 
 (defvar e2wm-direx::err-buffer-name " *WM:DirEX-Err*")
